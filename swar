@@ -313,6 +313,10 @@ inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
     ```
     target_link_libraries(${PROJECT_NAME} swar::swar);
     ```
+
+- Acknowledgments
+
+  > https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 <!--
 #else
 #ifndef SWAR
