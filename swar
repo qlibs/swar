@@ -38,19 +38,27 @@
 
 ### Overview
 
-> API (https://godbolt.org/z/xvxEsPTqP)
+> API (https://godbolt.org/z/b4v9aTEYs)
 
 ```cpp
+static_assert(sizeof(u32) == sizeof(swar<u8,  4u>));
+static_assert(sizeof(u64) == sizeof(swar<u8,  8u>));
+static_assert(sizeof(u32) == sizeof(swar<u16, 2u>));
+static_assert(sizeof(u64) == sizeof(swar<u16, 4u>));
+static_assert(sizeof(u64) == sizeof(swar<u32, 2u>));
+
 constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
-constexpr swar<u8> lhs{data};
-constexpr swar<u8> rhs{5};
+constexpr swar<u8> lhs{data}; // copy_from
+constexpr swar<u8> rhs{5};    // broadcast (native: u64)
 
 static_assert(8u == lhs.size());
-static_assert(8u == rhs.size())
+static_assert(sizeof(u64) == sizeof(lhs))
+
 static_assert(any_of(lhs == rhs));
 static_assert(some_of(lhs == rhs));
 static_assert(not all_of(lhs == rhs));
 static_assert(not none_of(lhs == rhs));
+
 static_assert(3u == find_first_set(lhs == rhs));
 static_assert(4u == find_last_set(lhs == rhs));
 static_assert(2u == popcount(lhs == rhs));
