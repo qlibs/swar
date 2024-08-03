@@ -11,7 +11,7 @@
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/xob1nGYoP)
-[![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)]()
+[![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/n58WTodoh)
 
 ---------------------------------------
 
@@ -33,9 +33,20 @@
 
 ### Overview
 
-> API ()
+> API (https://godbolt.org/z/dMsTPdPnh)
 
 ```cpp
+constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
+constexpr swar::swar<u8/*, 8u*/> lhs{data};
+constexpr swar::swar<u8/*, 8u*/> rhs{5};
+
+static_assert(swar::any_of(lhs == rhs));
+static_assert(swar::some_of(lhs == rhs));
+static_assert(not swar::all_of(lhs == rhs));
+static_assert(not swar::none_of(lhs == rhs));
+static_assert(3u == swar::find_first_set(lhs == rhs));
+static_assert(4u == swar::find_last_set(lhs == rhs));
+static_assert(2u == swar::popcount(lhs == rhs));
 ```
 
 > Performance (https://godbolt.org/z/ManGb8aso)
@@ -101,8 +112,6 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
   and     rdx, rax
   xor     eax, eax
   rep bsf rax, rdx
-  cdqe
-  shr     rax, 3
   test    rdx, rdx
   mov     edx, 0
   cmove   rax, rdx
@@ -113,7 +122,97 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 
 ### Examples
 
-> swar (https://godbolt.org/z/ManGb8aso) vs simd (https://godbolt.org/z/T5qTrEonv)
+> swar (https://godbolt.org/z/ManGb8aso) vs simd (https://godbolt.org/z/qExMK6P4q)
+
+```cpp
+template<class T> auto eq(T lhs, T rhs) { return lhs == rhs; }
+```
+
+```cpp
+eq(swar<u8>, swar<u8>): // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rdx, -9187201950435737472
+  xor     rdi, rsi
+  movabs  rax, 72340172838076672
+  or      rdi, rdx
+  sub     rax, rdi
+  and     rax, rdx
+  ret
+
+eq(simd<u8>, simd<u8>): // $CXX -O3 -mavx512f
+  vpcmpeqb xmm0, xmm0, xmm1
+  ret
+```
+
+```cpp
+template<class T> auto contains(T lhs, auto value) {
+  const auto rhs = T{value};
+  const auto match = lhs == rhs;
+  return any_of(match);
+}
+```
+
+```cpp
+cointains(swar<u8>, swar<u8>): // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rax, 72340172838076673
+  movzx   esi, sil
+  movabs  rdx, -9187201950435737472
+  imul    rsi, rax
+  sub     rax, 1
+  xor     rdi, rsi
+  or      rdi, rdx
+  sub     rax, rdi
+  test    rax, rdx
+  setne   al
+  ret
+
+contains(simd<u8>, simd<u8>): // $CXX -O3 -mavx512f
+  vmovd        xmm1, edi
+  vpbroadcastb xmm1, xmm1
+  vpcmpeqb     xmm0, xmm1, xmm0
+  vptest       xmm0, xmm0
+  setne        al
+  ret
+```
+
+
+```cpp
+template<class T> auto find(T lhs, auto value) {
+  const auto rhs = T{value};
+  const auto match = lhs == rhs;
+  return any_of(match) * find_first_set(match);
+}
+```
+
+```cpp
+find(swar<u8>, swar<u8>): // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rax, 72340172838076673
+  movzx   esi, sil
+  movabs  rdx, 72340172838076672
+  imul    rsi, rax
+  movabs  rax, -9187201950435737472
+  xor     rdi, rsi
+  or      rdi, rax
+  sub     rdx, rdi
+  and     rdx, rax
+  xor     eax, eax
+  rep bsf rax, rdx
+  test    rdx, rdx
+  mov     edx, 0
+  cmove   rax, rdx
+  ret
+
+find(simd<u8>, simd<u8>): // $CXX -O3 -mavx512f
+  vmovd         xmm1, edi
+  vpbroadcastb  xmm1, xmm1
+  vpcmpeqb      xmm0, xmm1, xmm0
+  vpmovmskb     eax, xmm0
+  or            eax, 65536
+  rep           bsf ecx, eax
+  xor           eax, eax
+  vptest        xmm0, xmm0
+  cmovne        eax, ecx
+  ret
+```
 
 ---
 
