@@ -10,7 +10,7 @@
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)]()
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/jnK81Ezdz)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)]()
 
 ---------------------------------------
@@ -29,11 +29,13 @@
 
 - C++20 ([clang++13+, g++11](https://en.cppreference.com/w/cpp/compiler_support))
 
+  -std=c++20 -DNDEBUG -O3 -fno-exceptions -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+
 ---
 
 ### Overview
 
-> API ()
+> API (https://godbolt.org/z/4b3r9qKTG)
 
 ---
 
@@ -74,6 +76,7 @@ vs simd
 #else
 #ifndef SWAR
 #define SWAR 1'0'0 // SemVer
+#pragma GCC system_header
 
 namespace swar::inline v1_0_0 {
 using u8   = __UINT8_TYPE__;
@@ -486,5 +489,5 @@ static_assert(([] {
   }
 }(), true));
 #endif // NTEST
-#endif // MP
+#endif // SWAR
 #endif // README
