@@ -47,6 +47,8 @@ static_assert(not swar::none_of(lhs == rhs));
 static_assert(3u == swar::find_first_set(lhs == rhs));
 static_assert(4u == swar::find_last_set(lhs == rhs));
 static_assert(2u == swar::popcount(lhs == rhs));
+
+// and more (see API)...
 ```
 
 > Performance (https://godbolt.org/z/ManGb8aso)
