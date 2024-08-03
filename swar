@@ -15,9 +15,14 @@
 
 ---------------------------------------
 
-## SWAR: SIMD within a register library
+## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) within a register library
 
 > https://en.wikipedia.org/wiki/SWAR
+
+### Use cases
+
+- Performance
+- Portable [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
 
 ### Features
 
