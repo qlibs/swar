@@ -10,7 +10,7 @@
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/jnK81Ezdz)
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/xob1nGYoP)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)]()
 
 ---------------------------------------
@@ -27,15 +27,87 @@
 
 ### Requirements
 
-- C++20 ([clang++13+, g++11](https://en.cppreference.com/w/cpp/compiler_support))
-
-  -std=c++20 -DNDEBUG -O3 -fno-exceptions -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+- C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
 
 ---
 
 ### Overview
 
-> API (https://godbolt.org/z/4b3r9qKTG)
+> API ()
+
+```cpp
+```
+
+> Performance (https://godbolt.org/z/4b3r9qKTG)
+
+```cpp
+auto eq(swar::swar<swar::u8, 8u> lhs, swar::swar<swar::u8, 8u> rhs) {
+  return lhs == rhs;
+}
+```
+
+```cpp
+eq: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rdx, -9187201950435737472
+  xor     rdi, rsi
+  movabs  rax, 72340172838076672
+  or      rdi, rdx
+  sub     rax, rdi
+  and     rax, rdx
+  ret
+```
+
+```cpp
+auto contains(swar::swar<swar::u8, 8u> lhs, swar::u8 value) {
+  const auto rhs = swar::swar<swar::u8, 8u>{value};
+  const auto match = lhs == rhs;
+  return any_of(match);
+}
+```
+
+```cpp
+contains: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rax, 72340172838076673
+  movzx   esi, sil
+  movabs  rdx, -9187201950435737472
+  imul    rsi, rax
+  sub     rax, 1
+  xor     rdi, rsi
+  or      rdi, rdx
+  sub     rax, rdi
+  test    rax, rdx
+  setne   al
+  ret
+```
+
+```cpp
+auto find(swar::swar<swar::u8, 8u> lhs, swar::u8 value) {
+  const auto rhs = swar::swar<swar::u8, 8u>{value};
+  const auto match = lhs == rhs;
+  return any_of(match) * find_first_set(match);
+}
+```
+
+```cpp
+find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+  movabs  rax, 72340172838076673
+  movzx   esi, sil
+  movabs  rdx, 72340172838076672
+  imul    rsi, rax
+  movabs  rax, -9187201950435737472
+  xor     rdi, rsi
+  or      rdi, rax
+  sub     rdx, rdi
+  and     rdx, rax
+  xor     eax, eax
+  rep bsf rax, rdx
+  cdqe
+  shr     rax, 3
+  test    rdx, rdx
+  mov     edx, 0
+  cmove   rax, rdx
+  ret
+```
 
 ---
 
@@ -43,9 +115,65 @@
 
 vs simd
 
+  -std=c++20 -DNDEBUG -O3 -fno-exceptions -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+
 ---
 
 ### API
+
+```cpp
+namespace swar {
+template<class T, size_t Width, class TAbi = abi_t<T, Width>>
+  requires ((sizeof(T) * Width) <= sizeof(TAbi))
+struct swar {
+  using value_type = T;
+  using abi_type = TAbi;
+
+  constexpr swar() noexcept = default;
+  constexpr swar(const swar&) noexcept = default;
+  constexpr swar(swar&&) noexcept = default;
+  constexpr explicit swar(const auto value) noexcept requires requires { abi_type(value); };
+  constexpr explicit swar(auto* mem) noexcept;
+  constexpr explicit swar(const auto& gen) noexcept requires requires(size_t i) { gen(i); };
+  [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
+  [[nodiscard]] constexpr T operator[](size_t index) const noexcept;
+  [[nodiscard]] static constexpr auto size() noexcept -> size_t;
+  [[nodiscard]] friend constexpr auto operator==(const swar& lhs, const swar& rhs) noexcept -> swar;
+};
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto all_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto any_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto some_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto none_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto find_first_set(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto find_last_set(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto popcount(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+
+template<class>
+inline constexpr auto is_swar_v = false;
+
+template<class T, size_t With, class TAbi>
+inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
+```
+
+> Configuration
+
+```cpp
+#define SWAR 1'0'0  // Current library version (SemVer)
+```
 
 ---
 
