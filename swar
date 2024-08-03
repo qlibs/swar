@@ -10,7 +10,7 @@
 // -->
 [![Boost Licence](http://img.shields.io/badge/license-boost-blue.svg)](http://www.boost.org/LICENSE_1_0.txt)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
-[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/xob1nGYoP)
+[![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/55K55hqWb)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/n58WTodoh)
 
 ---------------------------------------
@@ -33,20 +33,22 @@
 
 ### Overview
 
-> API (https://godbolt.org/z/dMsTPdPnh)
+> API (https://godbolt.org/z/xvxEsPTqP)
 
 ```cpp
 constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
-constexpr swar::swar<u8/*, 8u*/> lhs{data};
-constexpr swar::swar<u8/*, 8u*/> rhs{5};
+constexpr swar<u8> lhs{data};
+constexpr swar<u8> rhs{5};
 
-static_assert(swar::any_of(lhs == rhs));
-static_assert(swar::some_of(lhs == rhs));
-static_assert(not swar::all_of(lhs == rhs));
-static_assert(not swar::none_of(lhs == rhs));
-static_assert(3u == swar::find_first_set(lhs == rhs));
-static_assert(4u == swar::find_last_set(lhs == rhs));
-static_assert(2u == swar::popcount(lhs == rhs));
+static_assert(8u == lhs.size());
+static_assert(8u == rhs.size())
+static_assert(any_of(lhs == rhs));
+static_assert(some_of(lhs == rhs));
+static_assert(not all_of(lhs == rhs));
+static_assert(not none_of(lhs == rhs));
+static_assert(3u == find_first_set(lhs == rhs));
+static_assert(4u == find_last_set(lhs == rhs));
+static_assert(2u == popcount(lhs == rhs));
 
 // and more (see API)...
 ```
