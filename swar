@@ -38,10 +38,10 @@
 ```cpp
 ```
 
-> Performance (https://godbolt.org/z/4b3r9qKTG)
+> Performance (https://godbolt.org/z/ManGb8aso)
 
 ```cpp
-auto eq(swar::swar<swar::u8, 8u> lhs, swar::swar<swar::u8, 8u> rhs) {
+auto eq(swar<u8> lhs, swar<u8> rhs) {
   return lhs == rhs;
 }
 ```
@@ -58,8 +58,8 @@ eq: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 ```
 
 ```cpp
-auto contains(swar::swar<swar::u8, 8u> lhs, swar::u8 value) {
-  const auto rhs = swar::swar<swar::u8, 8u>{value};
+auto contains(swar<u8> lhs, u8 value) {
+  const auto rhs = swar<u8>{value};
   const auto match = lhs == rhs;
   return any_of(match);
 }
@@ -81,8 +81,8 @@ contains: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 ```
 
 ```cpp
-auto find(swar::swar<swar::u8, 8u> lhs, swar::u8 value) {
-  const auto rhs = swar::swar<swar::u8, 8u>{value};
+auto find(swar<u8> lhs, u8 value) {
+  const auto rhs = swar<u8>{value};
   const auto match = lhs == rhs;
   return any_of(match) * find_first_set(match);
 }
@@ -113,16 +113,14 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 
 ### Examples
 
-vs simd
-
-  -std=c++20 -DNDEBUG -O3 -fno-exceptions -mno-sse -mno-sse2 -mno-sse3 -mno-avx
+> swar (https://godbolt.org/z/ManGb8aso) vs simd (https://godbolt.org/z/T5qTrEonv)
 
 ---
 
 ### API
 
 ```cpp
-template<class T, size_t Width, class TAbi = abi_t<T, Width>>
+template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
   requires ((sizeof(T) * Width) <= sizeof(TAbi))
 struct swar {
   using value_type = T;
@@ -193,7 +191,7 @@ inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
     )
     add_library(swar INTERFACE)
     target_include_directories(swar SYSTEM INTERFACE ${swar_SOURCE_DIR})
-    add_library(swar::swar ALIAS sawr)
+    add_library(swar::swar ALIAS swar)
     ```
 
     ```
@@ -228,7 +226,7 @@ using abi_t = decltype([]<class, size_t size = sizeof(T) * Width> {
   else return u128{};
 }.template operator()<T>());
 
-template<class T, size_t Width, class TAbi = abi_t<T, Width>>
+template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
   requires ((sizeof(T) * Width) <= sizeof(TAbi))
 struct swar {
   using value_type = T;
@@ -342,6 +340,21 @@ static_assert(([] {
 
   // swar::swar
   {
+    {
+      constexpr swar::swar<u8> s{};
+      static_assert(8u == s.size());
+    }
+
+    {
+      constexpr swar::swar<u16> s{};
+      static_assert(4u == s.size());
+    }
+
+    {
+      constexpr swar::swar<u32> s{};
+      static_assert(2u == s.size());
+    }
+
     {
       constexpr swar::swar<u8, 1u> s{};
       static_assert(1u == s.size());
