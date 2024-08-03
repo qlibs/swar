@@ -132,13 +132,13 @@ struct swar {
   constexpr swar() noexcept = default;
   constexpr swar(const swar&) noexcept = default;
   constexpr swar(swar&&) noexcept = default;
-  constexpr explicit swar(const auto value) noexcept requires requires { abi_type(value); };
+  constexpr explicit swar(const auto value) noexcept;
   constexpr explicit swar(auto* mem) noexcept;
-  constexpr explicit swar(const auto& gen) noexcept requires requires(size_t i) { gen(i); };
+  constexpr explicit swar(const auto& gen) noexcept;
   [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
-  [[nodiscard]] constexpr T operator[](size_t index) const noexcept;
+  [[nodiscard]] constexpr T operator[](size_t) const noexcept;
   [[nodiscard]] static constexpr auto size() noexcept -> size_t;
-  [[nodiscard]] friend constexpr auto operator==(const swar& lhs, const swar& rhs) noexcept -> swar;
+  [[nodiscard]] constexpr auto operator==(const swar&, const swar&) noexcept -> swar;
 };
 
 template<class T, size_t Width, class TAbi>
