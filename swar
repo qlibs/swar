@@ -122,7 +122,6 @@ vs simd
 ### API
 
 ```cpp
-namespace swar {
 template<class T, size_t Width, class TAbi = abi_t<T, Width>>
   requires ((sizeof(T) * Width) <= sizeof(TAbi))
 struct swar {
@@ -138,7 +137,7 @@ struct swar {
   [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
   [[nodiscard]] constexpr T operator[](size_t) const noexcept;
   [[nodiscard]] static constexpr auto size() noexcept -> size_t;
-  [[nodiscard]] constexpr auto operator==(const swar&, const swar&) noexcept -> swar;
+  [[nodiscard]] friend constexpr auto operator==(const swar&, const swar&) noexcept;
 };
 
 template<class T, size_t Width, class TAbi>
@@ -154,13 +153,13 @@ template<class T, size_t Width, class TAbi>
 [[nodiscard]] constexpr auto none_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_first_set(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+[[nodiscard]] constexpr auto find_first_set(const swar<T, Width, TAbi>& s) noexcept;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_last_set(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+[[nodiscard]] constexpr auto find_last_set(const swar<T, Width, TAbi>& s) noexcept;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto popcount(const swar<T, Width, TAbi>& s) noexcept -> size_t;
+[[nodiscard]] constexpr auto popcount(const swar<T, Width, TAbi>& s) noexcept;
 
 template<class>
 inline constexpr auto is_swar_v = false;
