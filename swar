@@ -48,7 +48,7 @@ constexpr swar<u8> rhs{5};    // broadcast (native: u64)
 static_assert(8u == lhs.size());
 static_assert(sizeof(u64) == sizeof(lhs))
 
-constexpr auto match == lhs == rhs;
+constexpr auto match = lhs == rhs;
 
 static_assert(any_of(match));
 static_assert(some_of(match));
