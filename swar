@@ -22,7 +22,7 @@
 ### Use cases
 
 - Performance
-- Portable [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) / https://wg21.link/P1928
+- Portable [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) (https://wg21.link/P1928)
 
 ### Features
 
