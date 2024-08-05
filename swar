@@ -250,7 +250,7 @@ struct swar {
   constexpr swar(const swar&) noexcept = default;
   constexpr swar(swar&&) noexcept = default;
   constexpr explicit swar(const auto value) noexcept;
-  constexpr explicit swar(auto* mem) noexcept;
+  constexpr explicit swar(const auto* mem) noexcept;
   constexpr explicit swar(const auto& gen) noexcept;
   [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
   [[nodiscard]] constexpr auto operator[](size_t) const noexcept -> T;
