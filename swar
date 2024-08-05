@@ -48,20 +48,24 @@ constexpr swar<u8> rhs{5};    // broadcast (native: u64)
 static_assert(8u == lhs.size());
 static_assert(sizeof(u64) == sizeof(lhs))
 
-static_assert(any_of(lhs == rhs));
-static_assert(some_of(lhs == rhs));
-static_assert(not all_of(lhs == rhs));
-static_assert(not none_of(lhs == rhs));
+constexpr auto match == lhs == rhs;
 
-static_assert(3u == find_first_set(lhs == rhs));
-static_assert(4u == find_last_set(lhs == rhs));
-static_assert(2u == popcount(lhs == rhs));
+static_assert(any_of(match));
+static_assert(some_of(match));
+static_assert(not all_of(match));
+static_assert(not none_of(match));
 
-static_assert(sizeof(u32) == sizeof(swar<u8,  4u>));
-static_assert(sizeof(u64) == sizeof(swar<u8,  8u>));
-static_assert(sizeof(u32) == sizeof(swar<u16, 2u>));
-static_assert(sizeof(u64) == sizeof(swar<u16, 4u>));
-static_assert(sizeof(u64) == sizeof(swar<u32, 2u>));
+static_assert(3u == find_first_set(match));
+static_assert(4u == find_last_set(match));
+static_assert(2u == popcount(match));
+static_assert(match[3u] and match[4u]);
+
+static_assert(sizeof(u32)  == sizeof(swar<u8,  4u>));
+static_assert(sizeof(u64)  == sizeof(swar<u8,  8u>));
+static_assert(sizeof(u32)  == sizeof(swar<u16, 2u>));
+static_assert(sizeof(u64)  == sizeof(swar<u16, 4u>));
+static_assert(sizeof(u64)  == sizeof(swar<u32, 2u>));
+static_assert(sizeof(u128) == sizeof(swar<u32, 4u>));
 
 // and more (see API)...
 ```
@@ -139,7 +143,7 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 
 ### Examples
 
-> swar (https://godbolt.org/z/ManGb8aso) vs simd (https://godbolt.org/z/qExMK6P4q)
+> swar vs simd / wg21.link/P1928 - (https://godbolt.org/z/YsG8evqr8)
 
 ```cpp
 template<class T> auto eq(T lhs, T rhs) { return lhs == rhs; }
@@ -249,37 +253,49 @@ struct swar {
   constexpr explicit swar(auto* mem) noexcept;
   constexpr explicit swar(const auto& gen) noexcept;
   [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
-  [[nodiscard]] constexpr T operator[](size_t) const noexcept;
+  [[nodiscard]] constexpr auto operator[](size_t) const noexcept -> T;
   [[nodiscard]] static constexpr auto size() noexcept -> size_t;
   [[nodiscard]] friend constexpr auto operator==(const swar&, const swar&) noexcept;
 };
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto all_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
+  requires ((sizeof(T) * Width) <= sizeof(TAbi))
+struct swar_mask {
+  using value_type = bool; /// predefined
+  using abi_type = TAbi;
+
+  constexpr swar_mask() noexcept = default;
+  constexpr swar_mask(const swar_mask&) noexcept = default;
+  constexpr swar_mask(swar_mask&&) noexcept = default;
+  constexpr explicit swar_mask(const abi_type value) noexcept : value{value} { }
+
+  [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> bool;
+  [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
+};
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto any_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+[[nodiscard]] constexpr auto all_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto some_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+[[nodiscard]] constexpr auto any_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto none_of(const swar<T, Width, TAbi>& s) noexcept -> bool;
+[[nodiscard]] constexpr auto some_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_first_set(const swar<T, Width, TAbi>& s) noexcept;
+[[nodiscard]] constexpr auto none_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_last_set(const swar<T, Width, TAbi>& s) noexcept;
+[[nodiscard]] constexpr auto find_first_set(const swar_mask<T, Width, TAbi>& s) noexcept;
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto popcount(const swar<T, Width, TAbi>& s) noexcept;
+[[nodiscard]] constexpr auto find_last_set(const swar_mask<T, Width, TAbi>& s) noexcept;
 
-template<class>
-inline constexpr auto is_swar_v = false;
+template<class T, size_t Width, class TAbi>
+[[nodiscard]] constexpr auto popcount(const swar_mask<T, Width, TAbi>& s) noexcept;
 
-template<class T, size_t With, class TAbi>
-inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
+template<class T> inline constexpr bool is_swar_v = /* unspecified */;
+template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
 ```
 
 > Configuration
@@ -316,7 +332,7 @@ inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
 
 - Acknowledgments
 
-  > https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+  > https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html, https://en.cppreference.com/w/cpp/experimental/simd/simd, wg21.link/P1928
 <!--
 #else
 #ifndef SWAR
@@ -348,21 +364,44 @@ using abi_t = decltype([]<class, size_t size = sizeof(T) * Width> {
 
 template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
   requires ((sizeof(T) * Width) <= sizeof(TAbi))
+struct swar_mask {
+  using value_type = bool; /// predefined
+  using abi_type = TAbi;
+
+  static constexpr size_t nbits = sizeof(T) * __CHAR_BIT__;
+  static constexpr abi_type lsb = broadcast<abi_type, nbits>(1u);
+  static constexpr abi_type msb = lsb << (nbits - 1u);
+
+  constexpr swar_mask() noexcept = default;
+  constexpr swar_mask(const swar_mask&) noexcept = default;
+  constexpr swar_mask(swar_mask&&) noexcept = default;
+  constexpr explicit swar_mask(const abi_type value) noexcept : value{value} { }
+
+  [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> bool {
+    return value & abi_type(1u) << ((1u + index) * nbits - 1u);
+  }
+  [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
+
+  abi_type value{};
+};
+
+template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
+  requires ((sizeof(T) * Width) <= sizeof(TAbi))
 struct swar {
   using value_type = T;
   using abi_type = TAbi;
 
   static constexpr size_t nbits = sizeof(T) * __CHAR_BIT__;
-  static constexpr abi_type lsb = broadcast<abi_type, nbits>(1);
+  static constexpr abi_type lsb = broadcast<abi_type, nbits>(1u);
   static constexpr abi_type msb = lsb << (nbits - 1u);
 
   constexpr swar() noexcept = default;
   constexpr swar(const swar&) noexcept = default;
   constexpr swar(swar&&) noexcept = default;
   constexpr explicit swar(const auto value) noexcept requires requires { abi_type(value); }
-    : value{abi_type(value) * lsb}
+    : value{abi_type(value) * lsb} /// broadcast
   { }
-  constexpr explicit swar(auto* mem) noexcept {
+  constexpr explicit swar(const auto* mem) noexcept {
     for (auto i = 0u; i < Width; ++i) value |= abi_type(mem[i]) << (nbits * i);
   }
   constexpr explicit swar(const auto& gen) noexcept requires requires(size_t i) { gen(i); } {
@@ -370,15 +409,13 @@ struct swar {
   }
 
   [[nodiscard]] constexpr explicit operator abi_type() const noexcept { return value; };
-  [[nodiscard]] constexpr T operator[](size_t index) const noexcept {
-    return (value >> (index * nbits)) & ((T(1) << nbits) - 1u);
+  [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> T{
+    return (value >> (index * nbits)) & ((T(1u) << nbits) - 1u);
   }
   [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
 
-  [[nodiscard]] friend constexpr auto operator==(const swar& lhs, const swar& rhs) noexcept -> swar {
-    swar s{};
-    s.value = ~(((abi_type(lhs) ^ abi_type(rhs)) | msb) - lsb) & msb;
-    return s;
+  [[nodiscard]] friend constexpr auto operator==(const swar& lhs, const swar& rhs) noexcept -> swar_mask<T, Width, TAbi> {
+    return swar_mask<T, Width, TAbi>{~(((abi_type(lhs) ^ abi_type(rhs)) | msb) - lsb) & msb};
   }
 
   abi_type value{};
@@ -400,43 +437,47 @@ struct swar {
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto all_of(const swar<T, Width, TAbi>& s) noexcept -> bool {
+[[nodiscard]] constexpr auto all_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool {
   return s.value == s.msb;
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto any_of(const swar<T, Width, TAbi>& s) noexcept -> bool {
+[[nodiscard]] constexpr auto any_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool {
   return s.value;
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto some_of(const swar<T, Width, TAbi>& s) noexcept -> bool {
+[[nodiscard]] constexpr auto some_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool {
   return any_of(s) and not all_of(s);
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto none_of(const swar<T, Width, TAbi>& s) noexcept -> bool {
+[[nodiscard]] constexpr auto none_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool {
   return not s.value;
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_first_set(const swar<T, Width, TAbi>& s) noexcept -> size_t {
+[[nodiscard]] constexpr auto find_first_set(const swar_mask<T, Width, TAbi>& s) noexcept -> size_t {
   return ctz(s.value) / s.nbits;
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_last_set(const swar<T, Width, TAbi>& s) noexcept -> size_t {
+[[nodiscard]] constexpr auto find_last_set(const swar_mask<T, Width, TAbi>& s) noexcept -> size_t {
   return s.size() - (clz(s.value) / s.nbits) - 1u;
 }
 
 template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto popcount(const swar<T, Width, TAbi>& s) noexcept -> size_t {
+[[nodiscard]] constexpr auto popcount(const swar_mask<T, Width, TAbi>& s) noexcept -> size_t {
   return popcount(s.value);
 }
 
 template<class> inline constexpr auto is_swar_v = false;
-template<class T, size_t With, class TAbi>
-inline constexpr auto is_swar_v<swar<T, With, TAbi>> = true;
+template<class T, size_t Width, class TAbi>
+inline constexpr auto is_swar_v<swar<T, Width, TAbi>> = true;
+
+template<class> inline constexpr auto is_swar_mask_v = false;
+template<class T, size_t Width, class TAbi>
+inline constexpr auto is_swar_mask_v<swar_mask<T, Width, TAbi>> = true;
 } // namespace swar
 
 #ifndef NTEST
@@ -488,33 +529,33 @@ static_assert(([] {
     {
       swar::swar<u8, 4u> s{42};
       expect(4u == s.size());
-      expect(42 == s[0]);
-      expect(42 == s[1]);
-      expect(42 == s[2]);
-      expect(42 == s[3]);
+      expect(42 == s[0u]);
+      expect(42 == s[1u]);
+      expect(42 == s[2u]);
+      expect(42 == s[3u]);
     }
 
     {
       const u8 data[]{1, 2, 3, 4};
       swar::swar<u8, 4u> s{data};
       expect(4u == s.size());
-      expect(1 == s[0]);
-      expect(2 == s[1]);
-      expect(3 == s[2]);
-      expect(4 == s[3]);
+      expect(1 == s[0u]);
+      expect(2 == s[1u]);
+      expect(3 == s[2u]);
+      expect(4 == s[3u]);
     }
 
     {
       swar::swar<u8, 8u> s{[](auto i) { return i*2; }};
       expect(8u == s.size());
-      expect(0*2 == s[0]);
-      expect(1*2 == s[1]);
-      expect(2*2 == s[2]);
-      expect(3*2 == s[3]);
-      expect(4*2 == s[4]);
-      expect(5*2 == s[5]);
-      expect(6*2 == s[6]);
-      expect(7*2 == s[7]);
+      expect(0*2 == s[0u]);
+      expect(1*2 == s[1u]);
+      expect(2*2 == s[2u]);
+      expect(3*2 == s[3u]);
+      expect(4*2 == s[4u]);
+      expect(5*2 == s[5u]);
+      expect(6*2 == s[6u]);
+      expect(7*2 == s[7u]);
     }
 
     {
@@ -539,6 +580,46 @@ static_assert(([] {
         swar::swar<u8, 4u> s{1};
         expect(decltype(s)::abi_type(s));
       }
+    }
+  }
+
+  // swar::swar_mask
+  {
+    {
+      constexpr swar::swar_mask<u8, 8u> s{};
+      static_assert(8u == s.size());
+    }
+
+    {
+      const u16 data1[]{1, 2, 3, 4};
+      const swar::swar<u16, 4u> lhs{data1};
+      const u16 data2[]{1, 3, 3, 1};
+      const swar::swar<u16, 4u> rhs{data2};
+
+      const swar::swar_mask<u16, 4u> sm = lhs == rhs;
+
+      expect(sm[0u]);
+      expect(not sm[1u]);
+      expect(sm[2u]);
+      expect(not sm[3u]);
+    }
+
+    {
+      const u8 data1[]{1, 2, 3, 4, 5, 6, 7, 8};
+      const swar::swar<u8, 8u> lhs{data1};
+      const u8 data2[]{1, 2, 3, 4, 0, 6, 7, 8};
+      const swar::swar<u8, 8u> rhs{data2};
+
+      const swar::swar_mask<u8, 8u> sm = lhs == rhs;
+
+      expect(sm[0u]);
+      expect(sm[1u]);
+      expect(sm[2u]);
+      expect(sm[3u]);
+      expect(not sm[4u]);
+      expect(sm[5u]);
+      expect(sm[6u]);
+      expect(sm[7u]);
     }
   }
 
@@ -735,17 +816,29 @@ static_assert(([] {
 
   // swar::popcount
   {
-    expect(0u == popcount(swar::swar<u8, 4>{}));
-    expect(1u*4u == popcount(swar::swar<u8, 4>{1}));
-    expect(3u*4u == popcount(swar::swar<u8, 4>{0b111}));
+    expect(0u == popcount(swar::swar_mask<u8, 4>{}));
+    expect(1u*4u == popcount(swar::swar_mask<u8, 4>{0x01'01'01'01}));
+    expect(3u*4u == popcount(swar::swar_mask<u8, 4>{0b00000111'00000111'00000111'00000111}));
   }
 
   // swar::is_swar_v
   {
     static_assert(not swar::is_swar_v<void>);
     static_assert(not swar::is_swar_v<int>);
+    static_assert(not swar::is_swar_v<swar::swar_mask<u8, 2u>>);
+    static_assert(not swar::is_swar_v<swar::swar_mask<u32, 2u>>);
     static_assert(swar::is_swar_v<swar::swar<u8, 2u>>);
     static_assert(swar::is_swar_v<swar::swar<u32, 2u>>);
+  }
+
+  // swar::is_swar_mask_v
+  {
+    static_assert(not swar::is_swar_mask_v<void>);
+    static_assert(not swar::is_swar_mask_v<int>);
+    static_assert(not swar::is_swar_mask_v<swar::swar<u8, 2u>>);
+    static_assert(not swar::is_swar_mask_v<swar::swar<u32, 2u>>);
+    static_assert(swar::is_swar_mask_v<swar::swar_mask<u8, 2u>>);
+    static_assert(swar::is_swar_mask_v<swar::swar_mask<u32, 2u>>);
   }
 }(), true));
 #endif // NTEST
