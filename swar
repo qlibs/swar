@@ -143,7 +143,7 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
 
 ### Examples
 
-> swar vs simd / https://wg21.link/P1928 - (https://godbolt.org/z/YsG8evqr8)
+> swar vs simd (https://godbolt.org/z/YsG8evqr8)
 
 ```cpp
 template<class T> auto eq(T lhs, T rhs) { return lhs == rhs; }
