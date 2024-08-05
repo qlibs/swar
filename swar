@@ -267,7 +267,7 @@ struct swar_mask {
   constexpr swar_mask() noexcept = default;
   constexpr swar_mask(const swar_mask&) noexcept = default;
   constexpr swar_mask(swar_mask&&) noexcept = default;
-  constexpr explicit swar_mask(const abi_type value) noexcept : value{value} { }
+  constexpr explicit swar_mask(const abi_type value) noexcept;
 
   [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> bool;
   [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
