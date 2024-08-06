@@ -22,7 +22,7 @@
 ### Use cases
 
 - Performance (branchless)
-- Portable [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) (https://wg21.link/P1928)
+- Portable (uses 'normal' registers)
 
 ### Features
 
@@ -353,14 +353,20 @@ template<class T, size_t N>
   for (size_t n{}; n < sizeof(T) * __CHAR_BIT__; n += N) result |= T(value) << n;
   return result;
 }
-template<class T, size_t Width>
-using abi_t = decltype([]<class, size_t size = sizeof(T) * Width> {
+
+namespace detail {
+template<size_t size>
+constexpr auto abi() {
        if constexpr (size <= sizeof(u8)) return u8{};
   else if constexpr (size <= sizeof(u16)) return u16{};
   else if constexpr (size <= sizeof(u32)) return u32{};
   else if constexpr (size <= sizeof(u64)) return u64{};
   else return u128{};
-}.template operator()<T>());
+}
+} // detail
+
+template<class T, size_t Width>
+using abi_t = decltype(detail::abi<sizeof(T) * Width>());
 
 template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
   requires ((sizeof(T) * Width) <= sizeof(TAbi))
