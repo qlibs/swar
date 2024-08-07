@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-#ifdef README
+#if 0
 // -->
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
@@ -349,9 +349,9 @@ template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
 
   > https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html, https://wg21.link/P1928
 <!--
-#else
-#ifndef SWAR
-#define SWAR 1'0'0 // SemVer
+#endif
+
+#pragma once
 #pragma GCC system_header
 
 namespace swar::inline v1_0_0 {
@@ -863,5 +863,3 @@ static_assert(([] {
   }
 }(), true));
 #endif // NTEST
-#endif // SWAR
-#endif // README
