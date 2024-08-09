@@ -23,16 +23,16 @@
 //
 #if 0
 // -->
+[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ)
+
+## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) within a register library
+
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://badge.fury.io/gh/qlibs%2Fswar.svg)](https://github.com/qlibs/swar/releases)
 [![Build](https://img.shields.io/badge/build-blue.svg)](https://godbolt.org/z/xob1nGYoP)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/55K55hqWb)
 
----------------------------------------
-
-## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) within a register library
-
-> https://en.wikipedia.org/wiki/SWAR
+  > https://en.wikipedia.org/wiki/SWAR
 
 ### Use cases
 
