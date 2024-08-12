@@ -332,11 +332,11 @@ template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
     )
     add_library(swar INTERFACE)
     target_include_directories(swar SYSTEM INTERFACE ${swar_SOURCE_DIR})
-    add_library(swar::swar ALIAS swar)
+    add_library(qlibs::swar ALIAS swar)
     ```
 
     ```
-    target_link_libraries(${PROJECT_NAME} swar::swar);
+    target_link_libraries(${PROJECT_NAME} qlibs::swar);
     ```
 
 - Acknowledgments
