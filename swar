@@ -26,6 +26,7 @@
 [Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ)
 
 ## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) Within A Register library
+[![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://img.shields.io/github/v/release/qlibs/swar)](https://github.com/qlibs/swar/releases)
 [![Build](https://img.shields.io/badge/build-green.svg)](https://godbolt.org/z/xob1nGYoP)
 [![Try it online](https://img.shields.io/badge/try%20it-online-blue.svg)](https://godbolt.org/z/55K55hqWb)
@@ -320,21 +321,22 @@ template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 
-- How to integrate with CMake/CPM?
+- How to integrate with [CMake.FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)?
 
     ```
-    CPMAddPackage(
-      Name swar
-      GITHUB_REPOSITORY qlibs/swar
+    include(FetchContent)
+
+    FetchContent_Declare(
+      qlibs.swar
+      GIT_REPOSITORY https://github.com/qlibs/swar
       GIT_TAG v1.0.0
     )
-    add_library(swar INTERFACE)
-    target_include_directories(swar SYSTEM INTERFACE ${swar_SOURCE_DIR})
-    add_library(qlibs::swar ALIAS swar)
+
+    FetchContent_MakeAvailable(qlibs.swar)
     ```
 
     ```
-    target_link_libraries(${PROJECT_NAME} qlibs::swar);
+    target_link_libraries(${PROJECT_NAME} PUBLIC qlibs.swar);
     ```
 
 - Acknowledgments
