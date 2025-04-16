@@ -35,22 +35,22 @@
 
 ### Use cases
 
-- Performance (branchless)
-- Portable (uses 'normal' registers)
+> - Performance (branchless)
+> - Portable (uses 'normal' registers)
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar)
-- Minimal [API](#api)
-- Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
+> - Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar)
+> - Minimal [API](#api)
+> - Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
 
 ### Requirements
 
-- C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
+> - C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
 
 ### Overview
 
-> `API` (https://godbolt.org/z/b4v9aTEYs)
+> - `API` (https://godbolt.org/z/b4v9aTEYs)
 
 ```cpp
 constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
@@ -82,7 +82,7 @@ static_assert(sizeof(u128) == sizeof(swar<u32, 4u>));
 // and more (see API)...
 ```
 
-> Performance (https://godbolt.org/z/ManGb8aso)
+> - Performance (https://godbolt.org/z/ManGb8aso)
 
 ```cpp
 auto eq(swar<u8> lhs, swar<u8> rhs) {
@@ -317,7 +317,7 @@ namespace swar::inline v1_0_0 {
 
 ### Resources
 
-> - std::simd (https://wg21.link/P1928)
+> - https://wg21.link/P1928 (std::simd)
 > - https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
 ### License
