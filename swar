@@ -50,7 +50,7 @@
 
 ### Overview
 
-> - `API` (https://godbolt.org/z/b4v9aTEYs)
+> `API` (https://godbolt.org/z/b4v9aTEYs)
 
 ```cpp
 constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
@@ -82,7 +82,7 @@ static_assert(sizeof(u128) == sizeof(swar<u32, 4u>));
 // and more (see API)...
 ```
 
-> - Performance (https://godbolt.org/z/ManGb8aso)
+> Performance (https://godbolt.org/z/ManGb8aso)
 
 ```cpp
 auto eq(swar<u8> lhs, swar<u8> rhs) {
