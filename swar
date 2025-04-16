@@ -312,12 +312,12 @@ namespace swar::inline v1_0_0 {
 
 > - How to disable running tests at compile-time?
 >
->     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
->     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
+>   When `-DNTEST` is defined static_asserts tests wont be executed upon include.
+>   Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 
 ### Resources
 
-> - https://wg21.link/P1928
+> - std::simd (https://wg21.link/P1928)
 > - https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
 ### License
