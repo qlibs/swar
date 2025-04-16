@@ -35,18 +35,18 @@
 
 ### Use cases
 
-> - Performance (branchless)
-> - Portable (uses 'normal' registers)
+- Performance (branchless)
+- Portable (uses 'normal' registers)
 
 ### Features
 
-> - Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar)
-> - Minimal [API](#api)
-> - Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
+- Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar)
+- Minimal [API](#api)
+- Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
 
 ### Requirements
 
-> - C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
+- C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
 
 ### Overview
 
