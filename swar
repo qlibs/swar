@@ -23,7 +23,7 @@
 //
 #if 0
 // -->
-[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ)
+[Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ) / [Resources](#Resources)
 
 ## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) Within A Register library
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
@@ -48,11 +48,9 @@
 
 - C++20 ([clang++13+, g++12](https://en.cppreference.com/w/cpp/compiler_support))
 
----
-
 ### Overview
 
-> API (https://godbolt.org/z/b4v9aTEYs)
+> `API` (https://godbolt.org/z/b4v9aTEYs)
 
 ```cpp
 constexpr u8 data[]{1, 2, 3, 5, 5, 6, 7, 8};
@@ -153,8 +151,6 @@ find: // $CXX -O3 -mno-sse -mno-sse2 -mno-sse3 -mno-avx
   ret
 ```
 
----
-
 ### Examples
 
 > swar vs simd (https://godbolt.org/z/YsG8evqr8)
@@ -249,70 +245,68 @@ find(simd<u8>, simd<u8>): // $CXX -O3 -mavx512f
   ret
 ```
 
----
-
 ### API
 
 ```cpp
-template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
-  requires ((sizeof(T) * Width) <= sizeof(TAbi))
-struct swar {
-  using value_type = T;
-  using abi_type = TAbi;
+namespace swar::inline v1_0_0 {
+  template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
+    requires ((sizeof(T) * Width) <= sizeof(TAbi))
+  struct swar {
+    using value_type = T;
+    using abi_type = TAbi;
 
-  constexpr swar() noexcept = default;
-  constexpr swar(const swar&) noexcept = default;
-  constexpr swar(swar&&) noexcept = default;
-  constexpr explicit swar(const auto value) noexcept;
-  constexpr explicit swar(const auto* mem) noexcept;
-  constexpr explicit swar(const auto& gen) noexcept;
-  [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
-  [[nodiscard]] constexpr auto operator[](size_t) const noexcept -> T;
-  [[nodiscard]] static constexpr auto size() noexcept -> size_t;
-  [[nodiscard]] friend constexpr auto operator==(const swar&, const swar&) noexcept;
-};
+    constexpr swar() noexcept = default;
+    constexpr swar(const swar&) noexcept = default;
+    constexpr swar(swar&&) noexcept = default;
+    constexpr explicit swar(const auto value) noexcept;
+    constexpr explicit swar(const auto* mem) noexcept;
+    constexpr explicit swar(const auto& gen) noexcept;
+    [[nodiscard]] constexpr explicit operator abi_type() const noexcept;
+    [[nodiscard]] constexpr auto operator[](size_t) const noexcept -> T;
+    [[nodiscard]] static constexpr auto size() noexcept -> size_t;
+    [[nodiscard]] friend constexpr auto operator==(const swar&, const swar&) noexcept;
+  };
 
-template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
-  requires ((sizeof(T) * Width) <= sizeof(TAbi))
-struct swar_mask {
-  using value_type = bool; /// predefined
-  using abi_type = TAbi;
+  template<class T, size_t Width = sizeof(u64) / sizeof(T), class TAbi = abi_t<T, Width>>
+    requires ((sizeof(T) * Width) <= sizeof(TAbi))
+  struct swar_mask {
+    using value_type = bool; /// predefined
+    using abi_type = TAbi;
 
-  constexpr swar_mask() noexcept = default;
-  constexpr swar_mask(const swar_mask&) noexcept = default;
-  constexpr swar_mask(swar_mask&&) noexcept = default;
-  constexpr explicit swar_mask(const abi_type value) noexcept;
+    constexpr swar_mask() noexcept = default;
+    constexpr swar_mask(const swar_mask&) noexcept = default;
+    constexpr swar_mask(swar_mask&&) noexcept = default;
+    constexpr explicit swar_mask(const abi_type value) noexcept;
 
-  [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> bool;
-  [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
-};
+    [[nodiscard]] constexpr auto operator[](const size_t index) const noexcept -> bool;
+    [[nodiscard]] static constexpr auto size() noexcept -> size_t { return Width; }
+  };
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto all_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto all_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto any_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto any_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto some_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto some_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto none_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto none_of(const swar_mask<T, Width, TAbi>& s) noexcept -> bool;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_first_set(const swar_mask<T, Width, TAbi>& s) noexcept;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto find_first_set(const swar_mask<T, Width, TAbi>& s) noexcept;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto find_last_set(const swar_mask<T, Width, TAbi>& s) noexcept;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto find_last_set(const swar_mask<T, Width, TAbi>& s) noexcept;
 
-template<class T, size_t Width, class TAbi>
-[[nodiscard]] constexpr auto popcount(const swar_mask<T, Width, TAbi>& s) noexcept;
+  template<class T, size_t Width, class TAbi>
+  [[nodiscard]] constexpr auto popcount(const swar_mask<T, Width, TAbi>& s) noexcept;
 
-template<class T> inline constexpr bool is_swar_v = /* unspecified */;
-template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
+  template<class T> inline constexpr bool is_swar_v = /* unspecified */;
+  template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
+} // namespace swar
 ```
-
----
 
 ### FAQ
 
@@ -321,9 +315,15 @@ template<class T> inline constexpr bool is_swar_mask_v = /* unspecified */;
     > When `-DNTEST` is defined static_asserts tests wont be executed upon include.
     Note: Use with caution as disabling tests means that there are no gurantees upon include that given compiler/env combination works as expected.
 
-- Acknowledgments
+### Resources
 
-  > https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html, https://wg21.link/P1928
+> - https://wg21.link/P1928
+> - https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+
+### License
+
+> - [MIT](LICENSE)
+
 <!--
 #endif
 
