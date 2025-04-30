@@ -40,7 +40,7 @@
 
 ### Features
 
-- Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar) / C++20 module ((https://raw.githubusercontent.com/qlibs/swar/main/swar.cppm)
+- Single header (https://raw.githubusercontent.com/qlibs/swar/main/swar) / C++20 module (https://raw.githubusercontent.com/qlibs/swar/main/swar.cppm)
 - Minimal [API](#api)
 - Verifies itself upon include (can be disabled with `-DNTEST` - see [FAQ](#faq))
 
