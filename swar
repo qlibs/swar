@@ -317,8 +317,8 @@ namespace swar::inline v1_0_0 {
 
 ### Resources
 
-> - https://wg21.link/P1928 (std::simd)
-> - https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+> - `std::simd` - https://wg21.link/P1928
+> - Intel Optimization Reference Manual - https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 
 ### License
 
