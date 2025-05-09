@@ -25,7 +25,8 @@
 // -->
 [Overview](#Overview) / [Examples](#Examples) / [API](#API) / [FAQ](#FAQ) / [Resources](#Resources)
 
-## SWAR: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) Within A Register library
+## `swar`: [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) Within A Register library
+
 [![MIT Licence](http://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/license/mit)
 [![Version](https://img.shields.io/github/v/release/qlibs/swar)](https://github.com/qlibs/swar/releases)
 [![Build](https://img.shields.io/badge/build-green.svg)](https://godbolt.org/z/xob1nGYoP)
